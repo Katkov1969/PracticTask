@@ -2,6 +2,7 @@ import csv
 import os
 from html import escape  # Функция для экранирования специальных HTML-символов в строках
 
+
 class PriceMachine():
     def __init__(self, data_directory='data'):
         self.data_directory = data_directory  # Директория для поиска csv-файлов
@@ -14,7 +15,11 @@ class PriceMachine():
         '''
         for filename in os.listdir(self.data_directory):
             if 'price' in filename.lower() and filename.endswith('.csv'):
-                self._load_file(os.path.join(self.data_directory,filename),filename)
+                self._load_file(
+                    os.path.join(
+                        self.data_directory,
+                        filename),
+                    filename)
 
     def _load_file(self, file_path, filename):
         '''
@@ -24,21 +29,25 @@ class PriceMachine():
         '''
         with open(file_path, newline='', encoding='utf-8') as csvfile:
             '''
-            Открывается файл по указанному пути в режиме чтения, 
+            Открывается файл по указанному пути в режиме чтения,
             newline='' - обеспечивает правильную обработку новых строк
             '''
-            reader = csv.reader(csvfile, delimiter=',') # разделитель данных в csv - запятая
-            headers = next(reader, None) # Считывает первую строку csv-файла, в которой содержатся заголовки столбцов
-            product_index, price_index, weight_index = self._search_product_price_weight(headers)
+            reader = csv.reader(
+                csvfile, delimiter=',')  # разделитель данных в csv - запятая
+            # Считывает первую строку csv-файла, в которой содержатся заголовки
+            # столбцов
+            headers = next(reader, None)
+            product_index, price_index, weight_index = self._search_product_price_weight(
+                headers)
 
             if product_index is not None and price_index is not None and weight_index is not None:
                 ''' Проверяется, что все необходимые индексы столбцов были найдены
                 '''
-                for row in reader: # Перебор каждой строки и извлечение цены и веса товара
+                for row in reader:  # Перебор каждой строки и извлечение цены и веса товара
                     price = float(row[price_index])
                     weight = float(row[weight_index])
                     if weight != 0:
-                        price_per_kg = price/weight    # расчет цены за 1 кг
+                        price_per_kg = price / weight    # расчет цены за 1 кг
                     else:
                         price_per_kg = float('inf')
                     self.prices.append({
@@ -54,16 +63,20 @@ class PriceMachine():
             Метод для поиска и возвращения номеров столбцов c названиями товара, ценами и весом.
             Перебирает заголовки и опрпеделяет индексы нужных столбцов по известным названиям
         '''
-        product_index = None     #Инициилируются переменные для хранения индексов с наименованием, ценой и весом
+        product_index = None  # Инициилируются переменные для хранения индексов с наименованием, ценой и весом
         price_index = None
         weight_index = None
 
-        for i, header in enumerate(headers): #Возвращает пару (индекс, заголовок) для каждого заголовка в списке headers
+        for i, header in enumerate(
+                # Возвращает пару (индекс, заголовок) для каждого заголовка в
+                # списке headers
+                headers):
             header_lower = header.lower()   # Перевод в нижний регистр
-            header_lower = list(header_lower.split(",")) # Разбивает строку заголовка на список подстрок по запятым
+            # Разбивает строку заголовка на список подстрок по запятым
+            header_lower = list(header_lower.split(","))
             '''
             Ниже перебирается каждая часть заголовка, чтобы проверить, соответствует ли она одному из известных
-            вариантов для названия товара.Если совпадение найдено, устанавливает product_index, price_index, 
+            вариантов для названия товара.Если совпадение найдено, устанавливает product_index, price_index,
             weight_index на текущий индекс i.
             '''
             for item in header_lower:
@@ -78,7 +91,6 @@ class PriceMachine():
 
         return product_index, price_index, weight_index
 
-
     def find_text(self, text):
         '''
         Метод для поиска товаров по тексту
@@ -88,10 +100,13 @@ class PriceMachine():
         '''
         results = []
         for entry in self.prices:         # Перебирается каждый словарь в списке price
-            if text.lower() in entry['name'].lower():  # проверяет содержится ли text в названии прордукта (нижний регистр)
+            if text.lower() in entry['name'].lower(
+                # проверяет содержится ли text в названии прордукта (нижний
+                # регистр)
+            ):
                 results.append(entry)
 
-        return sorted(results, key = lambda x: x['price_per_kg'])
+        return sorted(results, key=lambda x: x['price_per_kg'])
 
     def display_results(self, results):
         '''
@@ -99,12 +114,24 @@ class PriceMachine():
         :param results:
         :return: Выводит таблицу с данными о товарах. Устанавливается предел символов для вывода данных.
         '''
-        print(f"{'№':<5}{'Наименование':<50}{'Цена':<10}{'вес':<10}{'файл':<15}{'цена за кг':<10}")
+        print(
+            f"{
+                '№':<5}{
+                'Наименование':<50}{
+                'Цена':<10}{
+                    'вес':<10}{
+                        'файл':<15}{
+                            'цена за кг':<10}")
         for i, entry in enumerate(results, 1):
             print(
-                f"{i:<5}{entry['name']:<50}{entry['price']:<10}{entry['weight']:<10}{entry['file']:<15}{entry['price_per_kg']:<10.2f}"
+                f"{
+                    i:<5}{
+                    entry['name']:<50}{
+                    entry['price']:<10}{
+                    entry['weight']:<10}{
+                    entry['file']:<15}{
+                        entry['price_per_kg']:<10.2f}"
             )
-
 
     def export_to_html(self, results, filename='output.html'):
         '''
@@ -114,14 +141,18 @@ class PriceMachine():
         '''
 
         with open(filename, 'w', encoding='utf-8') as f:
-            f.write('<html><head><title>Product Search Results</title></head><body>') # Запись начальных тэгов страницы
-            f.write('<h1>Результат поиска продуктов</h1>') # Заголовок 1-го уровня
-            f.write('<table border = "1">')             # Начинает HTML-таблицу с границей, установленной на 1 пиксель
+            # Запись начальных тэгов страницы
+            f.write('<html><head><title>Product Search Results</title></head><body>')
+            # Заголовок 1-го уровня
+            f.write('<h1>Результат поиска продуктов</h1>')
+            # Начинает HTML-таблицу с границей, установленной на 1 пиксель
+            f.write('<table border = "1">')
             '''  Добавляется строка заголовка таблицы'''
-            f.write('<tr><th>№</th><th>Наименование</th><th>цена</th><th>вес</th><th>файл</th><th>цена за кг.</th></tr>')
+            f.write(
+                '<tr><th>№</th><th>Наименование</th><th>цена</th><th>вес</th><th>файл</th><th>цена за кг.</th></tr>')
 
             for i, entry in enumerate(results, 1):
-                ''' Перебирается каждый элемент в списке results, 
+                ''' Перебирается каждый элемент в списке results,
                 возвращается пара (индекс, элемент) для каждого элемента, начиная с индекса 1
                  '''
                 f.write('<tr>')     # Начинается новая строка в таблице
@@ -137,6 +168,7 @@ class PriceMachine():
 
                 f.write('</table</body></html>')
 
+
 def main():
     '''
     Основная функция программы. Создает объект класса PriceMashine и загружает данные
@@ -147,7 +179,8 @@ def main():
     pm.load_prices()
 
     while True:
-        user_input = input("Введите текст для поиска (или 'exit' для выхода): ")
+        user_input = input(
+            "Введите текст для поиска (или 'exit' для выхода): ")
         if user_input.lower() == 'exit':
             print("Работа завершена")
             break
@@ -156,6 +189,6 @@ def main():
         pm.export_to_html(results)
         print("Результаты сохранены в файл output.html")
 
+
 if __name__ == '__main__':
     main()
-
